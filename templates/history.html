@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Usage History - AquaSense{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 mt-3 gap-3">
+    <div>
+        <h1 class="h3 mb-1" style="color: var(--dark-blue);">Usage History</h1>
+    </div>
+    
+    <!-- Filter Bar -->
+    <div class="btn-group shadow-sm" role="group" aria-label="History Filter">
+        {% set current_filter = request.args.get('filter', 'all') %}
+        <a href="{{ url_for('history', filter='week') }}" class="btn {% if current_filter == 'week' %}btn-primary{% else %}btn-outline-secondary bg-white{% endif %}">This Week</a>
+        <a href="{{ url_for('history', filter='month') }}" class="btn {% if current_filter == 'month' %}btn-primary{% else %}btn-outline-secondary bg-white{% endif %}">This Month</a>
+        <a href="{{ url_for('history', filter='year') }}" class="btn {% if current_filter == 'year' %}btn-primary{% else %}btn-outline-secondary bg-white{% endif %}">This Year</a>
+        <a href="{{ url_for('history', filter='all') }}" class="btn {% if current_filter == 'all' %}btn-primary{% else %}btn-outline-secondary bg-white{% endif %}">All</a>
+    </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="card p-3 h-100 shadow-sm border-0 metric-card">
+            <p class="small-label mb-1">Total Records</p>
+            <h3 class="mb-0">{{ summary.total_records if summary else 0 }}</h3>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card p-3 h-100 shadow-sm border-0 metric-card">
+            <p class="small-label mb-1">Avg Daily Usage</p>
+            <h3 class="mb-0">{{ summary.avg_usage if summary else 0 }} L</h3>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card p-3 h-100 shadow-sm border-0 metric-card-red">
+            <p class="small-label mb-1">Highest Usage Day</p>
+            <h3 class="mb-0">{{ summary.max_usage if summary else 0 }} L</h3>
+            <p class="text-secondary small mt-1 mb-0">on {{ summary.max_date if summary else 'N/A' }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Full Table -->
+<div class="card shadow-sm border-0 p-0 overflow-hidden">
+    {% if records %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="small-label px-4 py-3">Date</th>
+                    <th class="small-label py-3">Amount (L)</th>
+                    <th class="small-label py-3">Season</th>
+                    <th class="small-label py-3">Time of Day</th>
+                    <th class="small-label py-3 text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr class="{% if record.is_anomaly == 1 %}bg-light-red{% endif %}">
+                    <td class="px-4">{{ record.date }}</td>
+                    <td class="fw-bold">{{ record.amount }}</td>
+                    <td>{{ record.season }}</td>
+                    <td>{{ record.time_of_day }}</td>
+                    <td class="text-center">
+                        {% if record.is_anomaly == 1 %}
+                        <span class="badge bg-danger">⚠️ Anomaly</span>
+                        {% else %}
+                        <span class="badge bg-success">✅ Normal</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination (Placeholder for when more than 20 records exist) -->
+    {% if records|length > 20 %}
+    <div class="card-footer bg-white border-top p-3 d-flex justify-content-center">
+        <nav aria-label="History pagination">
+            <ul class="pagination mb-0">
+                <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">Next</a></li>
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="p-5 text-center">
+        <div class="fs-1 mb-3">📭</div>
+        <h5 class="text-secondary">No records found for this period.</h5>
+        <p class="text-secondary small mb-4">Try changing the filter or logging new usage data.</p>
+        <a href="{{ url_for('log_usage') }}" class="btn btn-primary">Log Usage Now</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

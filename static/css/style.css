@@ -1,0 +1,170 @@
+:root {
+    --primary-blue: #378ADD;
+    --light-blue: #B5D4F4;
+    --dark-blue: #185FA5;
+    --white: #FFFFFF;
+    --light-grey-bg: #F4F8FE;
+    --card-bg: #FFFFFF;
+    --text-primary: #1A1A2E;
+    --text-secondary: #6B7280;
+    --success-green: #22C55E;
+    --warning-yellow: #EAB308;
+    --danger-red: #EF4444;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--light-grey-bg);
+    color: var(--text-primary);
+    scroll-behavior: smooth;
+    transition: all 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+}
+
+p {
+    font-weight: 400;
+}
+
+.small-label {
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(55,138,221,0.08);
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric-card {
+    border-left: 4px solid var(--primary-blue);
+}
+
+.metric-card-green {
+    border-left: 4px solid var(--success-green);
+}
+
+.metric-card-yellow {
+    border-left: 4px solid var(--warning-yellow);
+}
+
+.metric-card-red {
+    border-left: 4px solid var(--danger-red);
+}
+
+.btn-primary {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--dark-blue);
+    border-color: var(--dark-blue);
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 1px solid #E5E7EB;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 0.25rem rgba(55,138,221,0.25);
+}
+
+.navbar {
+    background-color: var(--white);
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.navbar-brand {
+    color: var(--dark-blue);
+    font-weight: 600;
+}
+
+.navbar-brand:hover {
+    color: var(--primary-blue);
+}
+
+.nav-link.active {
+    color: var(--primary-blue) !important;
+    font-weight: 600;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(55,138,221,0.05);
+}
+
+.bg-light-red {
+    background-color: #FEE2E2 !important;
+}
+
+.best-model-row {
+    background-color: #DCFCE7 !important;
+}
+
+/* Circular Progress Indicator */
+.conservation-score-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    background: conic-gradient(var(--success-green) var(--score-percent, 0%), #E5E7EB 0);
+}
+
+.conservation-score-inner {
+    width: 80px;
+    height: 80px;
+    background-color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+/* Loading Spinner */
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.custom-spinner {
+    width: 3rem;
+    height: 3rem;
+    color: var(--primary-blue);
+}
+
+/* Badge Card Hover */
+.badge-card {
+    transition: transform 0.2s ease;
+}
+
+.badge-card:hover {
+    transform: scale(1.05);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+}

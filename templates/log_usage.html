@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Log Usage - AquaSense{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+    <div>
+        <h1 class="h3 mb-1" style="color: var(--dark-blue);">Log Water Usage</h1>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Form -->
+    <div class="col-12 col-lg-5">
+        <div class="card p-4 h-100 shadow-sm border-0">
+            <h5 class="mb-4">Log Today's Water Usage</h5>
+            
+            <form method="POST" action="{{ url_for('log_usage') }}" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="date" class="form-label small-label">Date</label>
+                    <!-- Default to today's date via JS -->
+                    <input type="date" class="form-control" id="date" name="date" required>
+                    <div class="invalid-feedback">Please select a date.</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="amount" class="form-label small-label">Water Used (Litres)</label>
+                    <input type="number" step="0.1" class="form-control" id="amount" name="amount" placeholder="Enter litres" required min="0.1">
+                    <div class="invalid-feedback">Please enter a valid amount.</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="season" class="form-label small-label">Season</label>
+                    <select class="form-select" id="season" name="season" required>
+                        <option value="" disabled>Select Season</option>
+                        <option value="Summer" {% if weather and weather.season == 'Summer' %}selected{% endif %}>Summer</option>
+                        <option value="Monsoon" {% if weather and weather.season == 'Monsoon' %}selected{% endif %}>Monsoon</option>
+                        <option value="Autumn" {% if weather and weather.season == 'Autumn' %}selected{% endif %}>Autumn</option>
+                        <option value="Winter" {% if weather and weather.season == 'Winter' %}selected{% endif %}>Winter</option>
+                    </select>
+                    <div class="invalid-feedback">Please select a season.</div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="time_of_day" class="form-label small-label">Time of Day</label>
+                    <select class="form-select" id="time_of_day" name="time_of_day" required>
+                        <option value="" disabled selected>Select Time</option>
+                        <option value="Morning">Morning</option>
+                        <option value="Afternoon">Afternoon</option>
+                        <option value="Evening">Evening</option>
+                        <option value="Night">Night</option>
+                    </select>
+                    <div class="invalid-feedback">Please select a time of day.</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 mb-3 shadow-sm">Save Record</button>
+                <div class="text-center text-secondary small">
+                    <i class="fs-6">💡</i> Your data is used to improve predictions
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Right Column: Recent Entries -->
+    <div class="col-12 col-lg-7">
+        <div class="card p-4 h-100 shadow-sm border-0">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">Recent Entries</h5>
+                <a href="{{ url_for('history') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            
+            {% if recent_records %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th class="small-label">Date</th>
+                            <th class="small-label">Amount (L)</th>
+                            <th class="small-label">Season</th>
+                            <th class="small-label">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in recent_records %}
+                        <tr class="{% if record.is_anomaly == 1 %}bg-light-red{% endif %}">
+                            <td>{{ record.date }}</td>
+                            <td class="fw-bold">{{ record.amount }}</td>
+                            <td>{{ record.season }}</td>
+                            <td>
+                                {% if record.is_anomaly == 1 %}
+                                <span class="badge bg-danger">⚠️ Anomaly</span>
+                                {% else %}
+                                <span class="badge bg-success">✅ Normal</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="fs-1 mb-3">📝</div>
+                <h6 class="text-secondary">No recent entries found.</h6>
+                <p class="text-secondary small">Log your water usage to see it here.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set date input to today
+        const dateInput = document.getElementById('date');
+        if (dateInput && !dateInput.value) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+        }
+
+        // Form validation
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Monthly Report - AquaSense{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+    <div>
+        <h1 class="h3 mb-1" style="color: var(--dark-blue);">Monthly Report</h1>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8">
+        <!-- Month Selector Form -->
+        <div class="card p-4 shadow-sm border-0 mb-4 bg-white">
+            <form method="GET" action="{{ url_for('report') }}" class="d-flex gap-3 align-items-end">
+                <div class="flex-grow-1">
+                    <label for="month" class="form-label small-label">Select Month</label>
+                    <select class="form-select" id="month" name="month">
+                        {% if available_months %}
+                            {% for m in available_months %}
+                            <option value="{{ m.value }}" {% if request.args.get('month') == m.value %}selected{% endif %}>{{ m.label }}</option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="current">Current Month</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-outline-primary px-4">View</button>
+            </form>
+        </div>
+        
+        <!-- Preview Card -->
+        <div class="card shadow-sm border-0 overflow-hidden">
+            <!-- Report Header -->
+            <div class="p-4" style="background-color: var(--light-blue); border-bottom: 4px solid var(--primary-blue);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-1" style="color: var(--dark-blue);">{{ summary.month_name if summary else 'Current Month' }}</h2>
+                        <p class="mb-0 text-dark opacity-75">AquaSense Usage Summary</p>
+                    </div>
+                    <div class="fs-1">📄</div>
+                </div>
+            </div>
+            
+            <!-- Report Body -->
+            <div class="p-4 bg-white">
+                <div class="row g-4 mb-4">
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded h-100 text-center">
+                            <p class="small-label mb-1">Total Usage</p>
+                            <h4 class="mb-0 text-primary">{{ summary.total_usage if summary else 0 }} L</h4>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded h-100 text-center">
+                            <p class="small-label mb-1">Daily Average</p>
+                            <h4 class="mb-0 text-primary">{{ summary.daily_avg if summary else 0 }} L</h4>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 {% if summary and summary.anomalies > 0 %}bg-light-red{% else %}bg-light{% endif %} rounded h-100 text-center">
+                            <p class="small-label mb-1">Anomalies Detected</p>
+                            <h4 class="mb-0 {% if summary and summary.anomalies > 0 %}text-danger{% endif %}">{{ summary.anomalies if summary else 0 }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded h-100 text-center">
+                            <p class="small-label mb-1">Badges Earned</p>
+                            <h4 class="mb-0 text-success">{{ summary.badges_earned if summary else 0 }}</h4>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-5 mb-2">
+                    <a href="{{ url_for('report_download', month=request.args.get('month', 'current')) }}" class="btn btn-primary btn-lg px-5 shadow-sm">
+                        📄 Download PDF Report
+                    </a>
+                </div>
+                <p class="text-center text-secondary small mt-3 mb-0">
+                    <i>Report generated using your usage data for the selected month.</i>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

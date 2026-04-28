@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Log In - AquaSense{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center mt-5">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-6" style="max-width: 420px;">
+        <div class="card p-4 shadow-sm border-0" style="background: linear-gradient(to bottom right, #FFFFFF, var(--light-blue));">
+            <div class="text-center mb-4">
+                <h1 class="h3 mb-2" style="color: var(--dark-blue);">💧 AquaSense</h1>
+                <p class="text-secondary mb-0">Monitor. Predict. Conserve.</p>
+            </div>
+            
+            {% if error %}
+            <div class="alert alert-danger shadow-sm">
+                ❌ {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('login') }}" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="email" class="form-label small-label">Email Address</label>
+                    <input type="email" class="form-control form-control-lg" id="email" name="email" required>
+                    <div class="invalid-feedback">Please enter a valid email address.</div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="password" class="form-label small-label">Password</label>
+                    <input type="password" class="form-control form-control-lg" id="password" name="password" required>
+                    <div class="invalid-feedback">Please enter your password.</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg w-100 mb-3 shadow-sm">Log In</button>
+            </form>
+            
+            <div class="text-center mt-2">
+                <p class="mb-0 text-secondary">
+                    Don't have an account? <a href="{{ url_for('register') }}" style="color: var(--primary-blue); font-weight: 500; text-decoration: none;">Register here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+      'use strict'
+      var forms = document.querySelectorAll('.needs-validation')
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
+</script>
+{% endblock %}

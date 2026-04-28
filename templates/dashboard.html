@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AquaSense{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+    <div>
+        <h1 class="h3 mb-1" style="color: var(--dark-blue);">Dashboard</h1>
+        <p class="text-secondary mb-0" id="currentDate"></p>
+    </div>
+
+    {% if weather is defined and weather %}
+    <div class="card p-2 px-3 shadow-sm d-flex flex-row align-items-center gap-3">
+        <div class="fs-2">
+            {% if weather.season == 'Summer' %}🌞
+            {% elif weather.season == 'Monsoon' %}🌧️
+            {% elif weather.season == 'Autumn' %}🍂
+            {% elif weather.season == 'Winter' %}❄️
+            {% else %}☁️{% endif %}
+        </div>
+        <div>
+            <div class="fw-bold">{{ weather.city | default('') }}</div>
+            <div class="small text-secondary">{{ weather.temperature | default('') }}°C, {{ weather.description |
+                default('') }}</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Row 1: Metric Cards -->
+<div class="row g-4 mb-4">
+    <!-- Today's Usage -->
+    <div class="col-12 col-sm-6 col-lg-3">
+        {% set today_status = 'green' %}
+        {% if stats is defined and stats and stats.threshold and stats.today_usage %}
+        {% set t_usage = stats.today_usage | float %}
+        {% set t_thresh = stats.threshold | float %}
+        {% if t_usage > t_thresh %}
+        {% set today_status = 'red' %}
+        {% elif t_usage > (t_thresh * 0.8) %}
+        {% set today_status = 'yellow' %}
+        {% endif %}
+        {% endif %}
+
+        <div class="card metric-card metric-card-{{ today_status }} p-3 h-100">
+            <p class="small-label mb-1">Today's Usage</p>
+            <h2 class="mb-0">{{ stats.today_usage if stats is defined and stats else 0 }} L</h2>
+        </div>
+    </div>
+
+    <!-- This Week -->
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card metric-card p-3 h-100">
+            <p class="small-label mb-1">This Week</p>
+            <h2 class="mb-0">{{ stats.week_usage if stats is defined and stats else 0 }} L</h2>
+        </div>
+    </div>
+
+    <!-- This Month -->
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card metric-card p-3 h-100">
+            <p class="small-label mb-1">This Month</p>
+            <h2 class="mb-0">{{ stats.month_usage if stats is defined and stats else 0 }} L</h2>
+        </div>
+    </div>
+
+    <!-- Threshold -->
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card metric-card p-3 h-100">
+            <p class="small-label mb-1">Threshold</p>
+            <h2 class="mb-0">{{ stats.threshold if stats is defined and stats else 0 }} L</h2>
+            <p class="text-secondary small mt-1 mb-0">{{ stats.threshold_remaining if stats is defined and stats else 0
+                }} L remaining</p>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2: Charts and Streaks -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-lg-8">
+        <div class="card p-4 h-100">
+            <h5 class="mb-4">Weekly Consumption</h5>
+            <div style="height: 300px;">
+                <canvas id="weeklyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card p-4 text-center">
+                    <div class="fs-1 mb-2">🔥</div>
+                    <h3 class="fw-bold mb-1">{{ user.streak if user is defined and user else 0 }} Day Streak</h3>
+                    <p class="text-secondary small mb-0">Days under threshold</p>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card p-4 text-center">
+                    <h6 class="mb-3">Conservation Score</h6>
+                    <div class="conservation-score-wrapper mb-3"
+                        style="--score-percent: {{ user.conservation_score if user is defined and user else 0 }}%;">
+                        <div class="conservation-score-inner">
+                            {{ user.conservation_score if user is defined and user else 0 }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 3: Alerts and Badges -->
+<div class="row g-4">
+    <!-- Active Alerts -->
+    <div class="col-12 col-lg-6">
+        <h5 class="mb-3">Active Alerts</h5>
+        {% if alerts is defined and alerts %}
+        {% for alert in alerts %}
+        <div class="card bg-light-red p-3 mb-3 border-0">
+            <div class="d-flex align-items-start gap-3">
+                <div class="fs-4">⚠️</div>
+                <div>
+                    <div class="fw-bold text-danger">{{ alert.message | default('') }}</div>
+                    <div class="small text-secondary">{{ alert.triggered_at | default('') }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="card bg-light p-3 border-0 text-center">
+            <div class="text-success mb-2">✅ No active alerts</div>
+            <p class="text-secondary small mb-0">You're doing great!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Badges -->
+    <div class="col-12 col-lg-6">
+        <h5 class="mb-3">Recent Badges</h5>
+        {% if badges is defined and badges %}
+        <div class="row g-3">
+            {% for badge in badges[:4] %}
+            <div class="col-6">
+                <div class="card badge-card p-3 text-center h-100 bg-light border-0">
+                    <div class="fs-2 mb-2">{{ badge.badge_icon | default('') }}</div>
+                    <div class="fw-bold small">{{ badge.badge_name | default('') }}</div>
+                    <div class="text-secondary" style="font-size: 0.7rem;">{{ badge.earned_at | default('') }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card bg-light p-4 border-0 text-center">
+            <div class="fs-3 mb-2">🏅</div>
+            <p class="text-secondary mb-0">Start logging to earn badges!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Set today's date
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', options);
+
+        // Safely parse Jinja arrays to JS using |default filter and |safe
+        let weeklyLabels = [];
+        let weeklyData = [];
+        let threshold = 0;
+
+        weeklyLabels = JSON.parse('{{ stats.weekly_labels | default([]) | tojson | safe }}');
+        weeklyData = JSON.parse('{{ stats.weekly_data | default([]) | tojson | safe }}');
+        threshold = Number('{{ stats.threshold | default(0) }}');
+
+    // Render chart if data is available
+    if (weeklyLabels.length > 0 && typeof weeklyBarChart === 'function') {
+        weeklyBarChart(weeklyLabels, weeklyData, threshold);
+    }
+    });
+</script>
+{% endblock %}

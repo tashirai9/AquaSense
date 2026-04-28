@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - AquaSense{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+    <div>
+        <h1 class="h3 mb-1" style="color: var(--dark-blue);">Admin Dashboard</h1>
+        <p class="text-secondary mb-0">Platform Overview & Management</p>
+    </div>
+    
+    <div>
+        <a href="{{ url_for('admin_export') }}" class="btn btn-primary shadow-sm d-flex align-items-center gap-2">
+            📥 Download All Data (CSV)
+        </a>
+    </div>
+</div>
+
+<!-- Row 1: Platform Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card p-3 h-100 shadow-sm border-0 metric-card">
+            <p class="small-label mb-1">Total Users</p>
+            <h3 class="mb-0">{{ stats.total_users if stats else 0 }}</h3>
+        </div>
+    </div>
+    
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card p-3 h-100 shadow-sm border-0 metric-card">
+            <p class="small-label mb-1">Platform Avg Usage</p>
+            <h3 class="mb-0">{{ stats.platform_avg if stats else 0 }} L/day</h3>
+        </div>
+    </div>
+    
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card p-3 h-100 shadow-sm border-0 metric-card-yellow">
+            <p class="small-label mb-1">Total Alerts Today</p>
+            <h3 class="mb-0 text-warning">{{ stats.alerts_today if stats else 0 }}</h3>
+        </div>
+    </div>
+    
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card p-3 h-100 shadow-sm border-0 metric-card-red">
+            <p class="small-label mb-1">Total Anomalies</p>
+            <h3 class="mb-0 text-danger">{{ stats.total_anomalies if stats else 0 }}</h3>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2: Top Consumers -->
+<div class="card shadow-sm border-0 p-4 mb-4">
+    <h5 class="mb-4">Top 5 Consumers (Last 30 Days)</h5>
+    
+    {% if top_consumers %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th class="small-label py-3">Name</th>
+                    <th class="small-label py-3">Email</th>
+                    <th class="small-label py-3 text-end">Avg Daily Usage (L)</th>
+                    <th class="small-label py-3 text-center">Total Records</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for consumer in top_consumers %}
+                <tr class="{% if loop.first %}bg-light-red{% endif %}">
+                    <td class="fw-bold">{{ consumer.name }}</td>
+                    <td>{{ consumer.email }}</td>
+                    <td class="text-end fw-bold {% if loop.first %}text-danger{% endif %}">{{ consumer.avg_usage }} L</td>
+                    <td class="text-center">{{ consumer.total_records }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-4 text-secondary">
+        <p class="mb-0">No consumer data available.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

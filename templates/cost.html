@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Water Cost Estimator - AquaSense{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+    <div>
+        <h1 class="h3 mb-1" style="color: var(--dark-blue);">Water Cost Estimator</h1>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Form -->
+    <div class="col-12 col-lg-5">
+        <div class="card p-4 h-100 shadow-sm border-0">
+            <h5 class="mb-4">Calculate Your Water Cost</h5>
+            
+            <form method="POST" action="{{ url_for('cost') }}" class="needs-validation" novalidate>
+                <div class="mb-4">
+                    <label for="tariff_rate" class="form-label small-label">Tariff Rate (₹ per litre)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">₹</span>
+                        <input type="number" step="0.001" class="form-control" id="tariff_rate" name="tariff_rate" value="{{ user.tariff_rate if user else 0.05 }}" required min="0">
+                    </div>
+                    <div class="invalid-feedback">Please enter a valid tariff rate.</div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="custom_threshold" class="form-label small-label">Custom Daily Threshold (Litres)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="custom_threshold" name="custom_threshold" value="{{ user.threshold if user else 200 }}" required min="1">
+                        <span class="input-group-text bg-light">L</span>
+                    </div>
+                    <div class="form-text">Adjust this to see how changing your threshold affects costs.</div>
+                    <div class="invalid-feedback">Please enter a valid threshold.</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 shadow-sm">Calculate</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Right Column: Results -->
+    <div class="col-12 col-lg-7">
+        {% if results %}
+        <div class="row g-3 h-100">
+            <div class="col-12 col-sm-6">
+                <div class="card p-4 h-100 shadow-sm border-0 metric-card">
+                    <p class="small-label mb-1">Today's Cost</p>
+                    <h3 class="mb-0 text-primary">₹{{ results.today_cost }}</h3>
+                </div>
+            </div>
+            
+            <div class="col-12 col-sm-6">
+                <div class="card p-4 h-100 shadow-sm border-0 metric-card">
+                    <p class="small-label mb-1">Monthly Estimate</p>
+                    <h3 class="mb-0 text-primary">₹{{ results.monthly_estimate }}</h3>
+                </div>
+            </div>
+            
+            <div class="col-12 col-sm-6">
+                <div class="card p-4 h-100 shadow-sm border-0 metric-card">
+                    <p class="small-label mb-1">Annual Projection</p>
+                    <h3 class="mb-0 text-primary">₹{{ results.annual_projection }}</h3>
+                </div>
+            </div>
+            
+            <div class="col-12 col-sm-6">
+                <div class="card p-4 h-100 shadow-sm border-0 metric-card-green" style="background-color: #F0FDF4;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="small-label mb-1 text-success">Potential Monthly Savings</p>
+                            <h3 class="mb-0 text-success">₹{{ results.monthly_savings }}</h3>
+                        </div>
+                        <div class="fs-2">💰</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-12 mt-3">
+                <p class="text-secondary small text-center mb-0">
+                    <i>Based on your average daily usage of {{ results.avg_usage }} L</i>
+                </p>
+            </div>
+        </div>
+        {% else %}
+        <div class="card p-5 h-100 shadow-sm border-0 d-flex flex-column justify-content-center align-items-center text-center">
+            <div class="fs-1 mb-3 text-secondary">🧮</div>
+            <h5 class="text-secondary">Ready to calculate</h5>
+            <p class="text-secondary small mb-0">Enter your tariff rate and threshold on the left to see your estimated costs and potential savings.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+      'use strict'
+      var forms = document.querySelectorAll('.needs-validation')
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
+</script>
+{% endblock %}

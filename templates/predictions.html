@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Predictions & ML Analysis - AquaSense{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+    <div>
+        <h1 class="h3 mb-1" style="color: var(--dark-blue);">Predictions & ML Analysis</h1>
+    </div>
+</div>
+
+{% if error %}
+<div class="alert alert-info shadow-sm d-flex align-items-center gap-3 mb-4">
+    <div class="fs-4">ℹ️</div>
+    <div>{{ error }}</div>
+</div>
+{% else %}
+
+<!-- Row 1: Model Comparison Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card p-4 shadow-sm border-0">
+            <h5 class="mb-4">Model Performance Comparison</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th class="small-label">Model</th>
+                            <th class="small-label">R² Score</th>
+                            <th class="small-label">RMSE</th>
+                            <th class="small-label">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for model in models %}
+                        <tr class="{% if loop.first %}best-model-row{% endif %}">
+                            <td class="fw-bold">
+                                {{ model.name }}
+                                {% if loop.first %} <span class="ms-2">⭐</span> {% endif %}
+                            </td>
+                            <td>{{ model.r2_score }}</td>
+                            <td>{{ model.rmse }}</td>
+                            <td>
+                                {% if loop.first %}
+                                <span class="badge bg-success">Best Model</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Alternative</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-secondary small mb-0 mt-2">
+                <i>Higher R² = better accuracy, Lower RMSE = smaller error</i>
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2: Prediction Chart -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card p-4 shadow-sm border-0">
+            <h5 class="mb-4">7-Day Water Demand Forecast ({{ best_model.name if best_model else 'Prophet' }})</h5>
+
+            <div id="predictionSpinner" class="spinner-container">
+                <div class="spinner-border custom-spinner" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <div style="height: 350px;">
+                <canvas id="predictionChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 3: Anomaly Detection -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card p-4 shadow-sm border-0">
+            <h5 class="mb-4">Anomaly Detection Results</h5>
+
+            <ul class="nav nav-tabs mb-4" id="anomalyTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="zscore-tab" data-bs-toggle="tab" data-bs-target="#zscore"
+                        type="button" role="tab" aria-controls="zscore" aria-selected="true">Statistical
+                        (Z-Score)</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="iforest-tab" data-bs-toggle="tab" data-bs-target="#iforest"
+                        type="button" role="tab" aria-controls="iforest" aria-selected="false">ML-Based (Isolation
+                        Forest)</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="anomalyTabsContent">
+                <!-- Z-Score Tab -->
+                <div class="tab-pane fade show active" id="zscore" role="tabpanel" aria-labelledby="zscore-tab">
+                    {% if anomalies_zscore %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="small-label">Date</th>
+                                    <th class="small-label">Amount (L)</th>
+                                    <th class="small-label">Z-Score</th>
+                                    <th class="small-label">Flag</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for anomaly in anomalies_zscore %}
+                                <tr class="bg-light-red">
+                                    <td>{{ anomaly.date }}</td>
+                                    <td class="fw-bold">{{ anomaly.amount }}</td>
+                                    <td>{{ anomaly.score }}</td>
+                                    <td><span class="badge bg-danger">Outlier</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success d-flex align-items-center gap-2 mb-0">
+                        ✅ <span>No anomalies detected using Statistical Z-Score method.</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Isolation Forest Tab -->
+                <div class="tab-pane fade" id="iforest" role="tabpanel" aria-labelledby="iforest-tab">
+                    {% if anomalies_iforest %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="small-label">Date</th>
+                                    <th class="small-label">Amount (L)</th>
+                                    <th class="small-label">Anomaly Score</th>
+                                    <th class="small-label">Flag</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for anomaly in anomalies_iforest %}
+                                <tr class="bg-light-red">
+                                    <td>{{ anomaly.date }}</td>
+                                    <td class="fw-bold">{{ anomaly.amount }}</td>
+                                    <td>{{ anomaly.score }}</td>
+                                    <td><span class="badge bg-danger">Outlier</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success d-flex align-items-center gap-2 mb-0">
+                        ✅ <span>No anomalies detected using Isolation Forest.</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if not error %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const labels = {{ prediction_labels | default([]) | tojson | safe }};
+    const data = {{ prediction_values | default([]) | tojson | safe }};
+    const userThreshold = {{ (user.threshold if user else 0) | tojson | safe }};
+
+    if (labels.length > 0) {
+        setTimeout(() => {
+            predictionLineChart(labels, data, userThreshold);
+        }, 500);
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
