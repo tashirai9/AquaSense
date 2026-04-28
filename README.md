@@ -43,11 +43,11 @@ templates/
 static/
 ```
 
-## 📌 Notes
+ Notes
 
 * Add your API keys in `config.py`
 * Database is SQLite (`database.db`)
 
 ---
 
-Made with 💙 using Flask
+Made with using Flask
